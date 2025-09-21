@@ -6,7 +6,7 @@ Este repositório contém o backend do protótipo de gestão de consultório, de
 
 ## 🔧 Tecnologias Utilizadas
 
-- **Java 17**
+- **Java 21**
 - **Spring Boot 3**
 - **Spring Web**
 - **Spring Data JPA**
@@ -21,54 +21,49 @@ Este repositório contém o backend do protótipo de gestão de consultório, de
 ```bash
 src/
 └── main/
-├── java/
-│ └── com.consultorio/
-│ ├── controller/ # Classes que expõem as APIs REST
-│ ├── service/ # Regras de negócio
-│ ├── repository/ # Acesso a dados (JPA Repositories)
-│ ├── model/ # Entidades do banco
-│ └── security/ # Configuração de autenticação JWT
-└── resources/
-├── application.properties # Configurações do Spring Boot
-└── data.sql # Dados iniciais (opcional)
+    ├── java/
+    │   └── com.example.fastflow_api/
+    │       ├── config/        # Configurações gerais do sistema (segurança, beans, etc.)
+    │       ├── controllers/   # Classes que expõem as APIs REST
+    │       ├── dtos/          # Objetos de transferência de dados (entrada e saída da API)
+    │       ├── mappers/       # Conversores entre entidades e DTOs (MapStruct, manual, etc.)
+    │       ├── models/        # Modelos de domínio
+    │       │   ├── entities/  # Entidades JPA que representam as tabelas do banco
+    │       │   ├── enums/     # Definições de enums usados pelas entidades e regras
+    │       │   └── records/   # Records Java para representações imutáveis de dados
+    │       ├── repositories/  # Interfaces JPA Repository (acesso a dados)
+    │       ├── services/      # Regras de negócio e orquestração da aplicação
+    │       └── FastflowApiApplication.java # Classe principal que inicializa a aplicação
+    │
+    └── resources/
+        ├── application.properties # Configurações do Spring Boot (ou application.yml)
+        └── data.sql               # Dados iniciais de carga no banco (opcional)
 ```
 
 ## ⚙ Funcionalidades Implementadas
 
 ### Paciente
-- Criar, atualizar, deletar e consultar pacientes
 - Consultar fila de exames por paciente
-- Consultar histórico de exames
 
 ### Médico
 - Consultar lista de pacientes em atendimento
-- Atualizar status de exames (Em Atendimento / Finalizado)
+- Atualizar status de exames (Em fila/ Chamar paciente / Em Atendimento / Finalizado)
 
 ### Atendente
-- Registrar pacientes e exames
-- Consultar e organizar fila de espera
-- Atualizar status do paciente na fila
-
-### Autenticação
-- Login via **JWT**
-- Proteção de endpoints por roles (`MEDICO`, `ATENDENTE`, `PACIENTE`)
+- Realizar o checkin do paciente
+- Auxiliar o paciente com maior dificuldade ou sem acessibilidade em consultas da fila
 
 ---
 
-## 📦 Endpoints Principais
+## 📦 Fluxo do Sistema:
+Está sendo considerado a tag #externo para fluxo que envolva a plataforma do SESI e #interno para fluxo que compreende as funcionalidades do sistema.
+1 - A empresa realiza pedido de exames e consultas #externo
+2 - O paciente comparece a clinica e tem o seu checkin realizado pela antedente #interno
+3 - O paciente acompanha a fila de espera em tempo real além de poder ser auxiliado por atendentes caso tenha dificuldade #interno
+4 - Ao ser chamado para exames e consultas os médicos e técnicos de laboratorio ao utilizar o sistema para fazer chamados provocam atualizações das filas em tempo real. #interno
+5 - Após todos os exames e consultas terem sido realizados, o fluxo segue normalmente como já acontece atualmente com o pessoal de atenimento encaminhando o paciente para algum próximo passo, se houver. #externo
 
-| Método | Endpoint                     | Descrição                                |
-|--------|-------------------------------|------------------------------------------|
-| POST   | `/auth/login`                 | Autenticação de usuário e retorno do JWT |
-| GET    | `/pacientes`                  | Listar todos os pacientes                |
-| GET    | `/pacientes/{id}`             | Buscar paciente por ID                   |
-| POST   | `/pacientes`                  | Criar novo paciente                      |
-| PUT    | `/pacientes/{id}`             | Atualizar paciente                       |
-| DELETE | `/pacientes/{id}`             | Deletar paciente                         |
-| GET    | `/exames`                     | Listar todos os exames                    |
-| POST   | `/exames`                     | Criar novo exame                          |
-| PUT    | `/exames/{id}/status`         | Atualizar status de um exame             |
-| GET    | `/fila`                        | Consultar fila de pacientes/exames       |
+
 
 > 💡 Obs: O JWT deve ser enviado no header `Authorization: Bearer <token>`.
 
@@ -108,22 +103,21 @@ O projeto inclui testes unitários e de integração:
 ```
 
 ## 📌 Observações
-Este backend é apenas um protótipo para hackathon, não recomendado para produção.  <br>
-A persistência dos dados é temporária (H2 em memória). Para produção, recomenda-se configurar PostgreSQL ou MySQL.  <br>
-Todos os endpoints estão documentados e podem ser testados via Postman ou Swagger.  <br>
+- Este backend é apenas um protótipo para hackathon, não recomendado para produção.  <br>
+- A persistência dos dados é temporária (H2 em memória). Para a produção, o sistema já exisitente do SESI funcionaria como base de dados para recuperar dados como logins e dados dos pedidos.  <br>
+- Algumas funcionalidades foram mockadas para simular o fluxo do sistema de forma que o foco principal, do recálculo da fila pudesse ser explorada.
+- webhooks foram utilizados para que os pacientes, após requisção da fila, possam ser atualizados dos tempos confome a fila fosse reatualizada. 
 
 ## 👥 Equipe
-
-Thiago Coutinho Sousa Silva - Dev/QA (Frontend)<br>
-Kevenn Viana Santos - Dev (Backend)<br>
 Lincon de Jesus Brito <br>
-Tássio Nascimento Santos <br>
+Kevenn Viana Santos - Dev (Backend)<br>
 Raphael dos Santos Cerqueira <br>
-
+Tássio Nascimento Santos <br>
+Thiago Coutinho Sousa Silva - Dev/QA (Frontend)<br>
 ## 🚀 Futuras Melhorias
 
-melhoria 1  <br>
-melhoria 2  <br>
+Criação e utilização de novos parâmetros de prioridade de atendimento para refinar gradativamente e progressivamente o tempo de espera do paciente. <br>
+Coleta de dados para utilização futura como um sistema de apoio a decisões. <br>
 
 ## 📄 Licença
 Este projeto está licenciado sob a MIT License.
